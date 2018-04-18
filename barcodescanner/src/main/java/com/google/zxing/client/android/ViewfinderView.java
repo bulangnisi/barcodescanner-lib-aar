@@ -24,8 +24,11 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Shader;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -79,6 +82,30 @@ public final class ViewfinderView extends View {
     this.cameraManager = cameraManager;
   }
 
+  /**
+   * 中间那条线每次刷新移动的距离
+   */
+  private static final int SPEEN_DISTANCE = 1;
+  /**
+   * 中间滑动线的最顶端位置
+   */
+  private int slideTop;
+  /**
+   * 中间滑动线的最底端位置
+   */
+  private int slideBottom;
+  /**
+   * 扫描框中的中间线的宽度
+   */
+  private static final int MIDDLE_LINE_WIDTH = 6;
+
+  /**
+   * 扫描框中的中间线的与扫描框左右的间隙
+   */
+  private static final int MIDDLE_LINE_PADDING = 10;
+
+  boolean isFirst;
+
   @SuppressLint("DrawAllocation")
   @Override
   public void onDraw(Canvas canvas) {
@@ -90,8 +117,16 @@ public final class ViewfinderView extends View {
     if (frame == null || previewFrame == null) {
       return;
     }
+
+    if (!isFirst) {
+      isFirst = true;
+      slideTop = frame.top;
+      slideBottom = frame.bottom;
+    }
+
     int width = canvas.getWidth();
     int height = canvas.getHeight();
+
 
     // Draw the exterior (i.e. outside the framing rect) darkened
     paint.setColor(resultBitmap != null ? resultColor : maskColor);
@@ -107,12 +142,47 @@ public final class ViewfinderView extends View {
     } else {
 
       // Draw a red "laser scanner" line through the middle to show decoding is active
-      paint.setColor(laserColor);
-      paint.setAlpha(SCANNER_ALPHA[scannerAlpha]);
-      scannerAlpha = (scannerAlpha + 1) % SCANNER_ALPHA.length;
-      int middle = frame.height() / 2 + frame.top;
-      canvas.drawRect(frame.left + 2, middle - 1, frame.right - 1, middle + 2, paint);
-      
+//      paint.setColor(laserColor);
+//      paint.setAlpha(SCANNER_ALPHA[scannerAlpha]);
+//      scannerAlpha = (scannerAlpha + 1) % SCANNER_ALPHA.length;
+//      int middle = frame.height() / 2 + frame.top;
+//      canvas.drawRect(frame.left + 2, middle - 1, frame.right - 1, middle + 2, paint);
+
+      LinearGradient mShader = new LinearGradient(0, 0, getMeasuredWidth(), 0,
+              new int[]{Color.parseColor("#0035b697"), Color.parseColor("#35b697"), Color.parseColor("#0035b697")},
+              new float[]{0.2f, 0.5f, 0.8f}, LinearGradient.TileMode.CLAMP);
+
+      Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+      mPaint.setShader(mShader);
+      slideTop += SPEEN_DISTANCE;
+      if (slideTop >= frame.bottom) {
+        slideTop = frame.top;
+      }
+      // 重画方法，让绘制更加流畅
+      invalidate();
+
+      canvas.drawRect(frame.left + 10, slideTop - 2, frame.right - 10, slideTop + 2, mPaint);
+//      canvas.drawRoundRect(frame.left + 10, slideTop - 2, frame.right - 10, slideTop + 2, 5, 5, mPaint);
+
+      //画出四个角
+      paint.setColor(Color.parseColor("#35b697"));
+
+      //左上角
+      canvas.drawRect(frame.left, frame.top, frame.left + 30,frame.top+ 5,paint);
+      canvas.drawRect(frame.left, frame.top, frame.left + 5,frame.top + 30,paint);
+
+      //右上角
+      canvas.drawRect(frame.right- 30,frame.top, frame.right,frame.top + 5,paint);
+      canvas.drawRect(frame.right- 4,frame.top, frame.right +1,frame.top + 30,paint);
+
+      //左下角
+      canvas.drawRect(frame.left,frame.bottom - 4,frame.left + 30,frame.bottom + 1,paint);
+      canvas.drawRect(frame.left,frame.bottom - 30,frame.left + 5,frame.bottom,paint);
+
+      //右下角
+      canvas.drawRect(frame.right- 30,frame.bottom - 4,frame.right,frame.bottom + 1, paint);
+      canvas.drawRect(frame.right- 4,frame.bottom - 30,frame.right + 1,frame.bottom, paint);
+
       float scaleX = frame.width() / (float) previewFrame.width();
       float scaleY = frame.height() / (float) previewFrame.height();
 

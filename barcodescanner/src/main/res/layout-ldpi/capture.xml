@@ -196,7 +196,8 @@
   <TextView android:id="@+id/status_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
+            android:layout_gravity="top|center_horizontal"
+            android:gravity="center"
             android:background="@color/transparent"
             android:text="@string/msg_default_status"
             android:textColor="@color/status_text"/>
@@ -214,5 +215,24 @@
           android:layout_gravity="top|right"
           android:drawableLeft="@drawable/toggle_torch"
           android:visibility="invisible"/>
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_gravity="bottom|center_horizontal"
+      android:layout_marginBottom="80dp"
+      android:gravity="center"
+      android:orientation="horizontal">
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="取消"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="开灯"/>
+
+  </LinearLayout>
 
 </merge>

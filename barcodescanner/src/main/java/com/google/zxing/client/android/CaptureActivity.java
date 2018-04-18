@@ -21,6 +21,8 @@ import android.content.Context;
 import android.content.pm.FeatureInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Button;
@@ -65,7 +67,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -125,6 +129,10 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   private InactivityTimer inactivityTimer;
   private BeepManager beepManager;
   private AmbientLightManager ambientLightManager;
+
+  private int[] torchImgs = {R.drawable.torch_off, R.drawable.torch_on};
+  private ImageButton btnCancel;
+  private ImageButton btnTorch;
 
   ViewfinderView getViewfinderView() {
     return viewfinderView;
@@ -193,6 +201,9 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     statusView = (TextView) findViewById(R.id.status_view);
     flipButton = (Button) findViewById(R.id.flip_button);
     torchButton = (Button) findViewById(R.id.torch_button);
+
+    btnCancel = (ImageButton) findViewById(R.id.button_cancel);
+    btnTorch = (ImageButton) findViewById(R.id.button_torch);
 
     handler = null;
     lastResult = null;
@@ -859,6 +870,22 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         }
       }
     }
+
+    btnCancel.setOnClickListener(new Button.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        setResult(RESULT_CANCELED);
+        finish();
+      }
+    });
+
+    btnTorch.setOnClickListener(new Button.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        cameraManager.setTorch(!cameraManager.isTorchOn());
+        btnTorch.setImageResource(cameraManager.isTorchOn() ? torchImgs[1] : torchImgs[0]);
+      }
+    });
   }
 
   public void drawViewfinder() {
